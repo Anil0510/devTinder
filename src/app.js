@@ -1,33 +1,38 @@
 const express=require('express');
-
+const connectDB=require("./config/database")
+require("./config/database")
 const app= express();
-// this will only call handle  get call to /user
-app.get("/user",(req,res)=>{
-    res.send({
-        firstName:'anil',
-        secondName:'d',
-        location:'Hyderbad'
-    })
+const User=require("./models/users")
+//creating a new instance of the user model
+app.post("/signup", async(req,res)=>{
+    const user = new User({
+        firstName:"Anil",
+        lastName:"Dayyala",
+        emailId:'anilmunna623@gmail.com',
+        password:"anil@123"
+    });
+    try{  
+        await  user.save();//return  a promise
+res.send("user added sucessfully");
+} catch(error){
+   res.status(400).send("Error saving the user:" + error.message)
+}
 
-})
-app.post((req,res)=>{
-    res.send("data save from database sucessfully")
+});
 
-})
-app.delete((req,res)=>{
-    res.send("Deleted sucessfulyy")
 
-})
-// this method will match all the HTTP methods API call to /test
-app.use("/helo",(req,res)=>{
-    res.send("hello hello")// if we give /  insted of /hello routing it will over ride
 
-})
-app.use("/test",(req,res)=>{
-    res.send("heloo from the server")
+
+connectDB().then(()=>{
+    console.log("data base connection established.....");
+    app.listen(3000,()=>{
+        console.log("server is sucessfully listening on port 3000")
+    });
     
-})
+ })
+ .catch((error)=>{
+     console.error("Dtabase  cannot be connected")
+ 
+ });
 
-app.listen(3000,()=>{
-    console.log("server is sucessfully listening on port 3000")
-})
+
