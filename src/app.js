@@ -8,24 +8,77 @@ app.use(express.json()); // Middleware to parse JSON requests
 // Signup route
 app.post('/signup', async (req, res) => {
     try {
-        // Create a new instance of the User model with req.body data
         const user = new User(req.body);
-
-        // Save the user to the database
         await user.save();
-
-        res.send('User added successfully!');
+        res.status(201).send('User added successfully!');
     } catch (error) {
         res.status(400).send('Error saving the user: ' + error.message);
     }
 });
 
+// Get user by email
+app.get('/user', async (req, res) => {
+    const userEmail = req.query.emailId; // Use query parameters
+    try {
+        const user = await User.findOne({ emailId: userEmail });
+        if (!user) {
+            res.status(404).send('User not found');
+        } else {
+            res.status(200).send(user);
+        }
+    } catch (error) {
+        res.status(400).send('Something went wrong: ' + error.message);
+    }
+});
+
+// Get all users (Feed API)
+app.get('/feed', async (req, res) => {
+    try {
+        const users = await User.find(); // Fetch all users
+        res.status(200).send(users);
+    } catch (error) {
+        res.status(400).send('Something went wrong: ' + error.message);
+    }
+});
+
+// Update user data
+app.patch('/user', async (req, res) => {
+    const userId = req.body.userId; // Use request body for updates
+    const data = req.body;
+    try {
+        const user = await User.findByIdAndUpdate(userId); // Return updated user
+        if (!user) {
+            res.status(404).send('User not found');
+        } else {
+            res.status(200).send('User updated successfully');
+        }
+    } catch (error) {
+        res.status(400).send('Something went wrong: ' + error.message);
+    }
+});
+
+// Delete user
+app.delete('/user', async (req, res) => {
+    const userId = req.body.userId; // Use request body for deletion
+    try {
+        const user = await User.findByIdAndDelete(userId);
+        if (!user) {
+            res.status(404).send('User not found');
+        } else {
+            res.status(200).send('User deleted successfully');
+        }
+    } catch (error) {
+        res.status(400).send('Something went wrong: ' + error.message);
+    }
+});
+
 // Connect to the database and start the server
-connectDB()
+const PORT = 3100
+connectDB() 
     .then(() => {
         console.log('Database connection established...');
-        app.listen(3000, () => {
-            console.log('Server is successfully listening on port 3000...');
+        app.listen(PORT, () => {
+            console.log(`server is running on port::${PORT}`);
         });
     })
     .catch((error) => {
