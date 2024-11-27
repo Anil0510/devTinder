@@ -9,7 +9,7 @@ const userSchema= new mongoose.Schema({
     lastName:{
        type:String 
     },
-    emaild:{
+    emailId:{
         type:String,
         required:true,
         unique:true,
@@ -39,7 +39,7 @@ throw new Error("gender data is not valid")
         default:"https://img.freepik.com/free-vector/isolated-young-handsome-man-different-poses-white-background-illustration_632498-859.jpg?t=st=1732613370~exp=1732616970~hmac=97f18d8838a2484a79c59e128bbf29e9d1b00b5607669d435261441fab801294&w=740"
     },
     about:{
-        type:string,
+        type:String,
         default:"this is the default of the user!",
     },
     skills:{
