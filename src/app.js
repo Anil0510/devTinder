@@ -42,18 +42,40 @@ app.get('/feed', async (req, res) => {
 });
 
 // Update user data
-app.patch('/user', async (req, res) => {
-    const userId = req.body.userId; // Use request body for updates
+app.patch('/user/:userId', async (req, res) => {
+    const userId = req.params?.userId; // Extract userId from params
     const data = req.body;
+
     try {
-        const user = await User.findByIdAndUpdate(userId); // Return updated user
+        const ALLOWED_UPDATES = ["photoUrl", "about", "gender", "age", "skills"];
+        const isUpdateAllowed = Object.keys(data).every((key) =>
+            ALLOWED_UPDATES.includes(key)
+        );
+
+        if (!isUpdateAllowed) {
+            throw new Error('Updates are not allowed');
+        }
+
+        if (data?.skills && data.skills.length > 10) {
+            throw new Error('Skills cannot be more than ten');
+        }
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            data,
+            {
+                new: true, // Return updated user
+                runValidators: true // Run schema validation
+            }
+        );
+
         if (!user) {
             res.status(404).send('User not found');
         } else {
             res.status(200).send('User updated successfully');
         }
     } catch (error) {
-        res.status(400).send('Something went wrong: ' + error.message);
+        res.status(400).send('UPDATE FAILED: ' + error.message);
     }
 });
 
@@ -73,8 +95,8 @@ app.delete('/user', async (req, res) => {
 });
 
 // Connect to the database and start the server
-const PORT = 3100
-connectDB() 
+const PORT = 3100;
+connectDB()
     .then(() => {
         console.log('Database connection established...');
         app.listen(PORT, () => {
