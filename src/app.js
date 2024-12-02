@@ -3,11 +3,14 @@ const connectDB = require('./config/database');
 const User = require('./models/user');
 const{validateSignUpData}=require("./utils/validation")
 const bcrypt=require("bcrypt");
+const cookieParser=require("cookie-parser")
+const jwt=require("jsonwebtoken");
+const {userAuth}=require("./middlewares/auth")
 
 
 const app = express();
 app.use(express.json()); // Middleware to parse JSON requests
-
+app.use(cookieParser());
 // Signup route
 app.post('/signup', async (req, res) => {
 //valiadting of data is requried
@@ -32,7 +35,7 @@ console.log(passwordHash);
 });
 
 // Get user by email
-app.get('/user', async (req, res) => {
+app.get('/user',userAuth, async (req, res) => {
     const userEmail = req.query.emailId; // Use query parameters
     try {
         const user = await User.findOne({ emailId: userEmail });
@@ -55,6 +58,15 @@ app.post("/login",async(req,res)=>{
      }
       const ispasswordValid= await bcrypt.compare(password,user.password)
       if(ispasswordValid){
+//creating a jwt token 
+const token=await  jwt.sign ({_id:user._id},"DEV@Tinder$123")
+console.log(token)
+
+//add the token to cookie and send the response to the user
+res.cookie("token",token)
+
+
+
         res.send("login sucessfully!")
       }
       else{
@@ -65,6 +77,29 @@ app.post("/login",async(req,res)=>{
         res.status(400).send("ERROR:"+error.message)
         
     }
+})
+
+
+app.get("/profile",userAuth,async(req,res)=>{
+    const cookies=req.cookies;
+const{token}=cookies
+if(!token){
+    throw new Error("Invalid Token")
+}
+//validate my token
+
+const decodedMessage=await jwt.verify(token,"DEV@Tinder$123")
+console.log(decodedMessage);
+const{_id}=decodedMessage;
+console.log("logged In user is"+_id)
+const user=await User.findById(_id);
+if(!user){
+    throw new Error("User does not exist")
+
+}
+
+    console.log(cookies)
+    res.send(user)
 })
 
 
