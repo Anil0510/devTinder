@@ -3,7 +3,8 @@ const User=require("../models/user")
 
 const userAuth=async(req,res,next)=>{
     //Read the token from the req cookies
-  try{  const {token}=req.cookies;
+  try{ 
+     const {token}=req.cookies;
   if(!token){
     throw new Error("Token is not valid!")
   }

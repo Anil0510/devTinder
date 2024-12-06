@@ -1,5 +1,7 @@
 const mongoose=require('mongoose');
 const validator = require('validator');
+const jwt=require("jsonwebtoken")
+const bcrypt=require("bcrypt")
 const userSchema= new mongoose.Schema({
     firstName:{
         type:String,
@@ -38,7 +40,8 @@ throw new Error("Invalid email adress:"+value)
     },
     gender:{
 type:String,
-validate(value){//custom validate functions and it is called only new document is called by default
+validate(value)
+{                               //custom validate functions and it is called only new document is called by default
     if(!["male","female","others"].includes(value)){
 throw new Error("gender data is not valid")
     }
@@ -67,5 +70,17 @@ type:[String]
 },{
     timestamps:true // for storing the registerd value
 })
+userSchema.methods.getJWT=async function(){
+const user=this;//this key word doest not work in arrow function
+const token=await jwt.sign ({_id:user._id},"DEV@Tinder$123",{
+    expiresIn:'7d'
+})
+}
+userSchema.methods.validatePassword=async function(passwordInputByuser){
+    const user=this
+    const passwordHash=user.password
+    const ispasswordValid=await bcrypt.compare(passwordInputByuser,passwordHash);
+    return ispasswordValid;
+}
 const User=mongoose.model("User", userSchema);
 module.exports=User;
