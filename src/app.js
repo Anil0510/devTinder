@@ -22,9 +22,9 @@ app.use("/auth", authRouter);
 app.use("/profile", profileRouter);
 app.use("/requests", requestRouter);
 app.use("/user", userRouter);
-app.get('/',(req,res)=>{
-  res.status(200).json({message:"Hello World...!"})
-})
+// app.get('/',(req,res)=>{
+//   res.status(200).json({message:"Hello World...!"})
+// })
 
 connectDB()
   .then(() => {
